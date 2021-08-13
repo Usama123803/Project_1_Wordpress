@@ -2,7 +2,7 @@
 /*
 	Template Name: Contact Page
 */
- get_header() ?>
+get_header() ?>
 
 	<h1>This is Contact Page</h1>
 	<h1> <?php the_title(); ?> </h1>
