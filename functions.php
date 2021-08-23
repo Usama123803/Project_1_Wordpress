@@ -299,11 +299,11 @@ function mobile_callback( $post )
 {
 	wp_nonce_field( 'mobile_save_post', 'mobile_add_meta_box_nonce');
 
-	$display = get_post_meta($post->ID);
+	$display = get_post_meta($post->ID, 'mobile_info_key', true);
 
-	$var1 = isset($display['mobile_id']) ? esc_attr($display['mobile_id'][0]) : 'No Value';
-	$var2 = isset($display['brand_id']) ? esc_attr($display['brand_id'][0]) : 'No Value';
-	$var3 = isset($display['price_id']) ? esc_attr($display['price_id'][0]) : 'No Value';
+	$var1 = isset($display['mobile_id']) ? esc_attr($display['mobile_id']) : '';
+	$var2 = isset($display['brand_id']) ? esc_attr($display['brand_id']) : '';
+	$var3 = isset($display['price_id']) ? esc_attr($display['price_id']) : '';
 	echo '<label for="mobile_id"> Model: <label>';
 	echo '<input type="text" id="mobile_id" name="mobile_id" placeholder="Enter Model" value="'.$var1 .'">' ;
 	echo "<br>";
@@ -313,6 +313,7 @@ function mobile_callback( $post )
 	echo '<label for="price_id"> Price: <label>';
 	echo '<input type="text" id="price_id" name="price_id" placeholder="Enter Price" value="'.$var3 .'">' ;
 }
+
 add_action( 'save_post', 'mobile_save_post' );
 function mobile_save_post( $post_id )
 {
@@ -333,32 +334,76 @@ function mobile_save_post( $post_id )
 		return ;
 	}
 
-	$mobile_id = sanitize_text_field( $_POST['mobile_id'] );
-	update_post_meta( $post_id, 'mobile_id', $mobile_id);
-
-	$brand_id = sanitize_text_field( $_POST['brand_id'] );
-	update_post_meta( $post_id, 'brand_id', $brand_id);
-
-	$price_id = sanitize_text_field( $_POST['price_id'] );
-	update_post_meta( $post_id, 'price_id', $price_id);
-}
-
-//Custom Form :
-if(isset($_POST['name'])){
-
-	$my_post = array(
-		'post_type' => 'mobile',
-		'post_title' => $_POST['name'],
-		'post_description' => $_POST['description'],
-		'post_price_id' => $_POST['price_id'],
-		'post_mobile_id' => $_POST['mobile_id'],
-		'post_brand_id' => $_POST['brand_id'],
-		'post_status' => 'publish'
+	$display = array(
+		'mobile_id' => sanitize_text_field($_POST['mobile_id']),
+		'brand_id' => sanitize_text_field($_POST['brand_id']),
+		'price_id' => sanitize_text_field($_POST['price_id'])
 	);
 
-	wp_insert_post($my_post);
+	update_post_meta($post_id,'mobile_info_key',$display);
+}
 
-	// print_r($my_post);
+// //Custom Form :
+// if(isset($_POST['name'])){
+
+// 	// $mobile_id = $_POST['mobile_id'];
+// 	// $brand_id = $_POST['brand_id'];
+// 	// $price_id = $_POST['price_id'];
+
+// 	$data = array(
+// 		'mobile_id' => sanitize_text_field($_POST['mobile_id']),
+// 		'brand_id' => sanitize_text_field($_POST['brand_id']),
+// 		'price_id' => sanitize_text_field($_POST['price_id'])
+// 	);
+
+// 	$my_post = array(
+// 		'post_type' => 'mobile',
+// 		'post_title' => $_POST['name'],
+// 		'post_description' => $_POST['description'],
+// 		'post_status' => 'publish',
+// 		'meta_input' => array(
+// 			'mobile_info_key' => $data
+// 		),
+// 	);
+
+// 	wp_insert_post($my_post);
+
+// 	// print_r($my_post);
+// }
+
+//Ajax Request
+add_action('wp_ajax_submit_variable1', 'submit_variable1');
+function submit_variable1()
+{
+	// echo "Submitted";
+
+	if(isset($_POST['name'])){
+
+		$mobile_id  = sanitize_text_field($_POST['mobile_id']);
+		$brand_id   = sanitize_text_field($_POST['brand_id']);
+		$price_id   = sanitize_text_field($_POST['price_id']);
+
+		$display = array(
+			'mobile_id' => $mobile_id,
+			'brand_id'  => $brand_id,
+			'price_id'  => $price_id
+		);
+
+		$args = array(
+			'post_type' => 'mobile',
+			'post_title' => $_POST['name'],
+			'post_content' => $_POST['description'],
+			'post_status' => 'publish',
+			'meta_input' => array(
+				'mobile_info_key' => $display
+			),
+		);
+
+		wp_insert_post($args);
+
+	}
+
+	wp_die();
 }
 
 ?>
